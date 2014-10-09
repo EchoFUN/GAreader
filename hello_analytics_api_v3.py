@@ -6,13 +6,13 @@ __author__ = 'xukai.ken@gmail.com(Kai.XU)'
 
 import sys
 
-# import the Auth Helper class
-import hello_analytics_api_v3_auth
-
 from apiclient.errors import HttpError
 from oauth2client.client import AccessTokenRefreshError
 
+import hello_analytics_api_v3_auth
 
+
+# import the Auth Helper class
 def main(argv):
   service = hello_analytics_api_v3_auth.initialize_service()
 
@@ -67,22 +67,61 @@ def get_first_profile_id(service):
 
 
 def get_results(service, profile_id):
-  # Use the Analytics Service Object to query the Core Reporting API
+  """Executes and returns data from the Core Reporting API.
+
+  This queries the API for the top 25 organic search terms by visits.
+
+  Args:
+    service: The service object built by the Google API Python client library.
+    profile_id: String The profile ID from which to retrieve analytics data.
+
+  Returns:
+    The response returned from the Core Reporting API.
+  """
+
   return service.data().ga().get(
       ids='ga:' + profile_id,
-      start_date='2012-03-03',
-      end_date='2012-03-03',
-      metrics='ga:sessions').execute()
+      start_date='2012-01-01',
+      end_date='2014-09-15',
+      metrics='ga:visits',
+      dimensions='ga:source,ga:keyword',
+      sort='-ga:visits',
+      filters='ga:medium==organic',
+      start_index='1',
+      max_results='25').execute()
 
 
 def print_results(results):
-  # Print data nicely for the user.
-  if results:
-    print 'First View (Profile): %s' % results.get('profileInfo').get('profileName')
-    print 'Total Sessions: %s' % results.get('rows')[0][0]
+  """Prints out the results.
+
+  This prints out the profile name, the column headers, and all the rows of
+  data.
+
+  Args:
+    results: The response returned from the Core Reporting API.
+  """
+
+  print
+  print 'Profile Name: %s' % results.get('profileInfo').get('profileName')
+  print
+
+  # Print header.
+  output = []
+  for header in results.get('columnHeaders'):
+    output.append('%30s' % header.get('name'))
+  print ''.join(output)
+
+  # Print data table.
+  if results.get('rows', []):
+    for row in results.get('rows'):
+      output = []
+      for cell in row:
+        output.append('%30s' % cell)
+      print ''.join(output)
 
   else:
-    print 'No results found'
+    print 'No Rows Found'
+
 
 
 if __name__ == '__main__': 

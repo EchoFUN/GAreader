@@ -4,13 +4,12 @@
 
 __author__ = 'xukai.ken@gmail.com(Kai.XU)'
 
-import httplib2
-
 from apiclient.discovery import build
-
+import httplib2
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.file import Storage
 from oauth2client.tools import run
+
 
 CLIENT_SECRETS = 'client_secrets.json'
 
