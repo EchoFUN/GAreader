@@ -7,6 +7,7 @@ __author__ = 'xukai.ken@gmail.com(Kai.XU)'
 import httplib2
 
 from apiclient.discovery import build
+
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.file import Storage
 from oauth2client.tools import run
@@ -19,12 +20,25 @@ MISSING_CLIENT_SECRETS_MESSAGE = '%s is missing' % CLIENT_SECRETS
 
 FLOW = flow_from_clientsecrets(CLIENT_SECRETS, scope = 'https://www.googleapis.com/auth/analytics.readonly', message = MISSING_CLIENT_SECRETS_MESSAGE)
 
-def main():
+
+def prepare_credentials():
+  storage = Storage(TOKEN_FILE_NAME)
+  credentials = storage.get()
   
-  
-  
-  pass
+  if credentials is None or credentials.invalid:
+    credentials = run(FLOW, storage)
+  return credentials
 
 
-if __name__ == '__main__':
-  main()
+
+def initialize_service():
+  http = httplib2.Http()
+
+  #Get stored credentials or run the Auth Flow if none are found
+  credentials = prepare_credentials()
+  http = credentials.authorize(http)
+
+  #Construct and return the authorized Analytics Service Object
+  return build('analytics', 'v3', http = http)  
+  
+  
